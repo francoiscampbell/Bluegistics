@@ -6,15 +6,18 @@ function save_logistic_layout(player, name)
         return
     end
 
-    local layout = {}
+    local slots = {}
     for i = 1, player.character_logistic_slot_count do
         local slot = player.get_personal_logistic_slot(i)
         if slot and slot.name then
-            layout[i] = slot
+            slots[i] = slot
         end
     end
 
-    global.layouts[name] = layout
+    global.layouts["restore_logistics_layout:" .. name] = {
+        name = name,
+        slots = slots,
+    }
     repaint_frame(player)
 end
 
@@ -26,7 +29,7 @@ end
 
 function restore_logistic_layout(player, layout)
     clear_logistic_layout(player)
-    for index, slot in pairs(layout) do
+    for index, slot in pairs(layout.slots) do
         player.set_personal_logistic_slot(index, slot)
     end
 end
@@ -71,11 +74,11 @@ function repaint_frame(player)
     if not frame then return end
 
     frame.clear()
-    for name, layout in pairs(global.layouts) do
+    for restore_button_name, layout in pairs(global.layouts) do
         frame.add{
             type = "button",
-            caption = name,
-            name = name,
+            caption = layout.name,
+            name = restore_button_name,
         }
     end
     frame.add{
