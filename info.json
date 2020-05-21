@@ -1,8 +1,8 @@
 {
   "name": "Bluegistics",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "title": "Bluegistics",
-  "description": "Blueprints for personal logistics slots",
+  "description": "\"Blueprints\" for personal logistics slots",
   "author": "francoiscampbell",
-  "factorio_version": "0.18.13"
+  "factorio_version": "0.18"
 }
