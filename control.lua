@@ -124,3 +124,7 @@ end
 
 script.on_init(setup)
 script.on_event(defines.events.on_gui_click, on_button_click)
+
+remote.add_interface("bluegistics", {
+    clear_globals=function() global.layouts = {}; repaint_frame(game.player) end
+})
