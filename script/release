@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+VERSION=$(jq -r '.version' < info.json)
+ZIP_FILES=(info.json changelog.txt control.lua)
+
+zip Bluegistics_${VERSION}.zip ${ZIP_FILES[@]}
