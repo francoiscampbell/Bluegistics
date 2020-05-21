@@ -17,6 +17,7 @@ function save_logistic_layout(player, name)
     global.layouts["restore_logistics_layout:" .. name] = {
         name = name,
         slots = slots,
+        slot_count = player.character_logistic_slot_count,
     }
     repaint_frame(player)
 end
@@ -29,6 +30,7 @@ end
 
 function restore_logistic_layout(player, layout)
     clear_logistic_layout(player)
+    player.character_logistic_slot_count = layout.slot_count
     for index, slot in pairs(layout.slots) do
         player.set_personal_logistic_slot(index, slot)
     end
