@@ -24,6 +24,7 @@ function clear_logistic_layout(player)
     for i = 1, player.character_logistic_slot_count do
         player.clear_personal_logistic_slot(i)
     end
+    player.character_logistic_slot_count = 0
 end
 
 function restore_logistic_layout(player, name)
