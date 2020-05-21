@@ -18,6 +18,8 @@ function save_logistic_layout(player, name)
         slots = slots,
         slot_count = player.character_logistic_slot_count,
     }
+
+    redraw_gui(player)
 end
 
 function clear_logistic_layout(player)
@@ -38,6 +40,15 @@ end
 
 function delete_logistic_layout(player, name)
     global.layouts[name] = nil
+    redraw_gui(player)
+end
+
+function count_layouts()
+    local num_layouts = 0
+    for _, _ in pairs(global.layouts) do
+        num_layouts = num_layouts + 1
+    end
+    return num_layouts
 end
 
 function create_button(player)
@@ -58,7 +69,7 @@ function create_button(player)
             sprite = "item/logistic-robot",
             style = mod_gui.button_style,
             tooltip = "Toggle saved logistics layouts frame",
-            number = 3,
+            number = count_layouts(),
         }
     else
         flow.add{
@@ -69,6 +80,15 @@ function create_button(player)
             tooltip = "Toggle saved logistics layouts frame",
         }
     end
+end
+
+function recreate_button(player)
+    local flow = mod_gui.get_button_flow(player)
+    local button = flow.toggle_saved_logistics_layouts
+    if button then
+        button.destroy()
+    end
+    create_button(player)
 end
 
 function toggle_frame(player)
@@ -87,6 +107,7 @@ function toggle_frame(player)
         style = mod_gui.frame_style,
         direction = "vertical",
     }
+    repaint_frame(player)
 end
 
 function repaint_frame(player)
@@ -139,6 +160,11 @@ function repaint_frame(player)
     }
 end
 
+function redraw_gui(player)
+    recreate_button(player)
+    repaint_frame(player)
+end
+
 function on_button_click(event)
     local player = game.players[event.player_index]
 
@@ -157,11 +183,7 @@ function on_button_click(event)
         restore_logistic_layout(player, restore_layout_name)
     elseif delete_layout_name then
         delete_logistic_layout(player, delete_layout_name)
-    else
-        return
     end
-
-    repaint_frame(player)
 end
 
 function setup()
@@ -175,6 +197,6 @@ script.on_init(setup)
 script.on_event(defines.events.on_gui_click, on_button_click)
 
 remote.add_interface("bluegistics", {
-    clear_globals=function() global.layouts = {}; repaint_frame(game.player) end,
+    clear_globals=function() global.layouts = {}; redraw_gui(game.player) end,
     reinit=setup,
 })

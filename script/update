@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+OLD_VERSION=$(jq -r '.version' < info.json)
+echo "New version number (current version ${OLD_VERSION}):"
+read NEW_VERSION
+
+echo "Updating to version ${NEW_VERSION}"
+
+# update info.json
+jq ".version = \"${NEW_VERSION}\"" < info.json > info.json.new
+mv info.json.new info.json
+
+# create new changelog entry
+DATE=$(date "+%Y.%m.%d")
+echo "---------------------------------------------------------------------------------------------------
+Version: ${NEW_VERSION}
+Date: ${DATE}" | cat - changelog.txt > changelog.txt.new
+mv changelog.txt.new changelog.txt
+
+# update symlink to this repo
+mv ~/Library/ApplicationSupport/factorio/mods/Bluegistics_${OLD_VERSION} ~/Library/ApplicationSupport/factorio/mods/Bluegistics_${NEW_VERSION}
