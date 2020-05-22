@@ -5,10 +5,11 @@ RELEASE_DIR="Bluegistics_${VERSION}"
 ZIP_FILES=(info.json changelog.txt control.lua)
 ZIP_FILE="Bluegistics_${VERSION}.zip"
 
+rm Bluegistics_*.zip
+
 rm -rf ${RELEASE_DIR}
 mkdir ${RELEASE_DIR}
 cp ${ZIP_FILES[@]} ${RELEASE_DIR}
 
-rm ${ZIP_FILE}
 zip -r ${ZIP_FILE} ${RELEASE_DIR}
 rm -rf ${RELEASE_DIR}
