@@ -19,15 +19,7 @@ function factoriact.create_element(component, props, children)
     }
 end
 
-function factoriact.render(elem, depth)
-    depth = depth or math.huge
-    -- print(depth .. " elem:")
-    -- pt(elem)
-
-    if depth == 0 then
-        return elem
-    end
-
+function factoriact.render_element(elem)
     local render_result
 
     local elem_type = type(elem)
@@ -45,13 +37,12 @@ function factoriact.render(elem, depth)
 
         if comp_type == 'function' then
             -- asked to render a component function
-            local to_render = component(elem.props)
-            render_result = factoriact.render(to_render, depth - 1)
+            render_result = factoriact.render_element(component(elem.props))
         elseif comp_type == 'string' then
             -- asked to render a native GUI component
             local rendered_children = {}
             for i, child in pairs(elem.props.children) do
-                rendered_children[i] = factoriact.render(child, depth - 1)
+                rendered_children[i] = factoriact.render_element(child)
             end
             elem.props.children = rendered_children
             render_result = elem
@@ -59,6 +50,9 @@ function factoriact.render(elem, depth)
     end
 
     return render_result
+end
+
+function factoriact.render(elem, gui_root)
 end
 
 fr = factoriact -- for easy debugging
@@ -117,7 +111,7 @@ elem = fr.e(
     }
 )
 pt(elem)
-pt(fr.render(elem, 5))
+pt(fr.render_element(elem, 5))
 
 
 
