@@ -2,46 +2,36 @@ local inspect = require "inspect"
 
 local factoriact = {}
 
-local function assign_children(props, children)
-    local props_copy = {}
-    for k, v in pairs(props) do
-        props_copy[k] = v
-    end
-    props_copy.children = children or {}
-    return props_copy
-end
-
 function factoriact.create_element(component, props, children)
     props = props or {}
+    children = children or {}
     return {
         component = component,
-        props = assign_children(props, children)
+        props = props,
+        children = children,
     }
 end
 
 function factoriact.render_element(elem)
-    local render_result
-
     local elem_type = type(elem)
     if elem_type == 'string' or elem_type == 'number' then
         -- asked to render a literal string or number
         return fr.e(
             'label',
             {
-                caption = component
+                caption = elem
             }
         )
     elseif elem_type == 'table' then
         local component = elem.component
         local comp_type = type(component)
-
         if comp_type == 'function' then
             -- asked to render a component function
-            return factoriact.render_element(component(elem.props))
+            return factoriact.render_element(component(elem.props, elem.children))
         elseif comp_type == 'string' then
             -- asked to render a native GUI component
-            for i, child in pairs(elem.props.children) do
-                elem.props.children[i] = factoriact.render_element(child)
+            for i, child in pairs(elem.children) do
+                elem.children[i] = factoriact.render_element(child)
             end
             return elem
         end
@@ -55,17 +45,17 @@ fr = factoriact -- for easy debugging
 pt = function(t) print(inspect(t)) end
 factoriact.e = factoriact.create_element
 
-local function InnerFrame(props)
+local function InnerFrame(props, children)
     return fr.e(
         'frame',
         {
             innerframe = true
         },
-        props.children
+        children
     )
 end
 
-local function DoubleFrame(props)
+local function DoubleFrame(props, children)
     return fr.e(
         'frame',
         props,
@@ -73,17 +63,16 @@ local function DoubleFrame(props)
             fr.e(
                 InnerFrame,
                 {},
-                props.children
+                children
             )
         }
     )
 end
 
-
-elem = fr.e(
+local elem = fr.e(
     DoubleFrame,
     {
-        direction = "horizontal"
+        direction = "horizontal",
     },
     {
         fr.e(
@@ -92,16 +81,10 @@ elem = fr.e(
                 style = "one"
             }
         ),
+        3,
         "Hello",
-        fr.e(
-            'button',
-            {
-                style = "three"
-            }
-        )
     }
 )
-pt(elem)
 pt(fr.render_element(elem))
 
 
