@@ -25,7 +25,7 @@ function factoriact.render_element(elem)
     local elem_type = type(elem)
     if elem_type == 'string' or elem_type == 'number' then
         -- asked to render a literal string or number
-        render_result = fr.e(
+        return fr.e(
             'label',
             {
                 caption = component
@@ -37,19 +37,15 @@ function factoriact.render_element(elem)
 
         if comp_type == 'function' then
             -- asked to render a component function
-            render_result = factoriact.render_element(component(elem.props))
+            return factoriact.render_element(component(elem.props))
         elseif comp_type == 'string' then
             -- asked to render a native GUI component
-            local rendered_children = {}
             for i, child in pairs(elem.props.children) do
-                rendered_children[i] = factoriact.render_element(child)
+                elem.props.children[i] = factoriact.render_element(child)
             end
-            elem.props.children = rendered_children
-            render_result = elem
+            return elem
         end
     end
-
-    return render_result
 end
 
 function factoriact.render(elem, gui_root)
@@ -96,12 +92,7 @@ elem = fr.e(
                 style = "one"
             }
         ),
-        fr.e(
-            'button',
-            {
-                style = "two"
-            }
-        ),
+        "Hello",
         fr.e(
             'button',
             {
@@ -111,7 +102,7 @@ elem = fr.e(
     }
 )
 pt(elem)
-pt(fr.render_element(elem, 5))
+pt(fr.render_element(elem))
 
 
 
