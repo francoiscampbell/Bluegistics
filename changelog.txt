@@ -1,4 +1,14 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.0.5
+Date: 2020.05.22
+  Info:
+    - Fixed restoring saved layout with items that don't exist in the current save
+  Debug:
+    - Added command to toggle debug logging: /c remote.call('blugistics', 'debug', true)
+  Scripting:
+    - Added command to set layouts manually: /c remote.call('blugistics', 'set_layouts', {})
+    - Renamed "clear_globals" interface to "clear_layouts"
+---------------------------------------------------------------------------------------------------
 Version: 0.0.4
 Date: 2020.05.21
   Info:
