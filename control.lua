@@ -219,7 +219,7 @@ script.on_event(defines.events.on_gui_click, on_button_click)
 script.on_event(defines.events.on_gui_confirmed, on_gui_confirmed)
 
 remote.add_interface("bluegistics", {
-    clear_globals=function() global.layouts = {}; redraw_gui(game.player) end,
+    clear_layouts=function() global.layouts = {}; redraw_gui(game.player) end,
     set_layouts=function(layouts) global.layouts = layouts; redraw_gui(game.player) end,
     reinit=setup,
     debug=function(d) global.__debug__ = d end,
