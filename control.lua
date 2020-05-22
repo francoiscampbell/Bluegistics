@@ -135,12 +135,14 @@ function repaint_frame(player)
         layout_table.add{
             type = "sprite-button",
             sprite = "utility/export_slot",
+            style = "green_icon_button",
             tooltip = "Restore saved layout",
             name = "restore_saved_layout/" .. layout_name,
         }
         layout_table.add{
             type = "sprite-button",
             sprite = "utility/trash",
+            style = "red_icon_button",
             tooltip = "Delete saved layout",
             name = "delete_saved_layout/" .. layout_name,
         }
