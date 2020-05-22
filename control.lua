@@ -1,8 +1,14 @@
 require("mod-gui")
 
+local function log(message)
+    if global.__debug__ then
+        game.print(message)
+    end
+end
+
 function save_logistic_layout(player, name)
     if not name or name == "" then
-        player.print("name cannot be nil or empty")
+        player.print("New layout name cannot be nil or empty")
         return
     end
 
@@ -14,6 +20,7 @@ function save_logistic_layout(player, name)
         end
     end
 
+    log('Saving current layout as ' .. name)
     global.layouts[name] = {
         slots = slots,
         slot_count = player.character_logistic_slot_count,
@@ -34,11 +41,14 @@ function restore_logistic_layout(player, name)
     local layout = global.layouts[name]
     player.character_logistic_slot_count = layout.slot_count
     for index, slot in pairs(layout.slots) do
-        player.set_personal_logistic_slot(index, slot)
+        if not pcall(player.set_personal_logistic_slot, index, slot) then
+            log('Ignoring unknown item ' .. slot.name)
+        end
     end
 end
 
 function delete_logistic_layout(player, name)
+    log('Deleting layout ' .. name)
     global.layouts[name] = nil
     redraw_gui(player)
 end
@@ -53,7 +63,7 @@ end
 
 function create_button(player)
     if not player.character then
-        player.print("player has no character")
+        log("player has no character")
         return
     end
 
@@ -161,6 +171,7 @@ function repaint_frame(player)
 end
 
 function redraw_gui(player)
+    log(serpent.block(global))
     recreate_button(player)
     repaint_frame(player)
 end
@@ -186,6 +197,16 @@ function on_button_click(event)
     end
 end
 
+function on_gui_confirmed(event)
+    local player = game.players[event.player_index]
+    local name = event.element.name
+
+    if name == "new_layout_name" then
+        local new_layout_name = mod_gui.get_frame_flow(player).saved_logistics_frame.new_layout_name.text
+        save_logistic_layout(player, new_layout_name)
+    end
+end
+
 function setup()
     global.layouts = global.layouts or {}
     for _, player in pairs(game.players) do
@@ -195,8 +216,11 @@ end
 
 script.on_init(setup)
 script.on_event(defines.events.on_gui_click, on_button_click)
+script.on_event(defines.events.on_gui_confirmed, on_gui_confirmed)
 
 remote.add_interface("bluegistics", {
     clear_globals=function() global.layouts = {}; redraw_gui(game.player) end,
+    set_layouts=function(layouts) global.layouts = layouts; redraw_gui(game.player) end,
     reinit=setup,
+    debug=function(d) global.__debug__ = d end,
 })
