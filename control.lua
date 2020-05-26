@@ -1,4 +1,5 @@
-require("mod-gui")
+require "mod-gui"
+local util = require "util"
 
 local function log(message)
     if global.__debug__ then
@@ -148,7 +149,7 @@ function repaint_frame(player)
         type = "table",
         column_count = 4,
     }
-    for layout_name, layout in pairs(global.layouts) do
+    for layout_name, layout in util.sorted_pairs(global.layouts) do
         local export = layout_table.add{
             type = "sprite-button",
             sprite = "utility/export_slot",
