@@ -55,6 +55,14 @@ function delete_logistic_layout(player, name)
     global.layouts[name] = nil
 end
 
+function rename_logistic_layout(from, to)
+    global.layouts[from].renaming = false
+    if from ~= to then
+        global.layouts[to] = global.layouts[from]
+        global.layouts[from] = nil
+    end
+end
+
 function count_layouts()
     local num_layouts = 0
     for _, _ in pairs(global.layouts) do
@@ -163,7 +171,6 @@ function repaint_frame(player)
             delete_logistic_layout(game.players[event.player_index], layout_name)
         end
 
-        log(layout.renaming)
         if layout.renaming then
             local rename = layout_table.add{
                 type = "sprite-button",
@@ -178,17 +185,12 @@ function repaint_frame(player)
                 name = "layout_new_name/" .. layout_name,
                 tooltip = "The new name for this saved layout"
             }
+            new_name_input.style.horizontally_stretchable = "on"
             on_button_click_handlers[rename.name] = function(event)
-                layout.renaming = false
-                local new_name = layout_table[new_name_input.name].text
-                global.layouts[new_name] = layout
-                global.layouts[layout_name] = nil
+                rename_logistic_layout(layout_name, layout_table[new_name_input.name].text)
             end
             on_gui_confirmed_handlers[new_name_input.name] = function(event)
-                layout.renaming = false
-                local new_name = event.element.text
-                global.layouts[new_name] = layout
-                global.layouts[layout_name] = nil
+                rename_logistic_layout(layout_name, event.element.text)
             end
         else
             local rename = layout_table.add{
