@@ -25,8 +25,6 @@ function save_logistic_layout(player, name)
         slots = slots,
         slot_count = player.character_logistic_slot_count,
     }
-
-    redraw_gui(player)
 end
 
 function clear_logistic_layout(player)
@@ -55,7 +53,6 @@ end
 function delete_logistic_layout(player, name)
     log('Deleting layout ' .. name)
     global.layouts[name] = nil
-    redraw_gui(player)
 end
 
 function count_layouts()
@@ -166,18 +163,49 @@ function repaint_frame(player)
             delete_logistic_layout(game.players[event.player_index], layout_name)
         end
 
-        local rename = layout_table.add{
-            type = "sprite-button",
-            sprite = "utility/rename_icon_small",
-            style = "tool_button",
-            tooltip = "Rename saved layout",
-            name = "rename_saved_layout/" .. layout_name,
-        }
-
-        layout_table.add{
-            type = "label",
-            caption = layout_name,
-        }
+        log(layout.renaming)
+        if layout.renaming then
+            local rename = layout_table.add{
+                type = "sprite-button",
+                sprite = "utility/check_mark",
+                style = "tool_button",
+                tooltip = "Rename saved layout",
+                name = "rename_saved_layout/" .. layout_name,
+            }
+            local new_name_input = layout_table.add{
+                type = "textfield",
+                text = layout_name,
+                name = "layout_new_name/" .. layout_name,
+                tooltip = "The new name for this saved layout"
+            }
+            on_button_click_handlers[rename.name] = function(event)
+                layout.renaming = false
+                local new_name = layout_table[new_name_input.name].text
+                global.layouts[new_name] = layout
+                global.layouts[layout_name] = nil
+            end
+            on_gui_confirmed_handlers[new_name_input.name] = function(event)
+                layout.renaming = false
+                local new_name = event.element.text
+                global.layouts[new_name] = layout
+                global.layouts[layout_name] = nil
+            end
+        else
+            local rename = layout_table.add{
+                type = "sprite-button",
+                sprite = "utility/rename_icon_small",
+                style = "tool_button",
+                tooltip = "Rename saved layout",
+                name = "rename_saved_layout/" .. layout_name,
+            }
+            on_button_click_handlers[rename.name] = function(event)
+                layout.renaming = true
+            end
+            layout_table.add{
+                type = "label",
+                caption = layout_name,
+            }
+        end
     end
 
     frame.add{
@@ -225,6 +253,7 @@ function on_button_click(event)
     event_handler = on_button_click_handlers[event.element.name]
     if event_handler then
         event_handler(event)
+        redraw_gui(game.players[event.player_index])
     end
 end
 
@@ -232,6 +261,7 @@ function on_gui_confirmed(event)
     event_handler = on_gui_confirmed_handlers[event.element.name]
     if event_handler then
         event_handler(event)
+        redraw_gui(game.players[event.player_index])
     end
 end
 
