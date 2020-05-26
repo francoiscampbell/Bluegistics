@@ -39,6 +39,11 @@ end
 function restore_logistic_layout(player, name)
     clear_logistic_layout(player)
     local layout = global.layouts[name]
+    if not layout then
+        log("Invalid layout " .. name .. ", probably because of a stale GUI. Current global: " .. serpent.line(global))
+        redraw_gui(player)
+        return
+    end
     player.character_logistic_slot_count = layout.slot_count
     for index, slot in pairs(layout.slots) do
         if not pcall(player.set_personal_logistic_slot, index, slot) then
@@ -173,7 +178,6 @@ function repaint_frame(player)
 end
 
 function redraw_gui(player)
-    log(serpent.block(global))
     recreate_button(player)
     repaint_frame(player)
 end
