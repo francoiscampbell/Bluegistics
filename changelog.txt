@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.1.0
+Date: 2020.05.25
+  Features:
+    - Added the ability to rename a layout
+  Bugfixes:
+    - Fixed crash when restoring a layout from a stale GUI (perhaps from removing and re-adding the mod to an existing save)
+---------------------------------------------------------------------------------------------------
 Version: 0.0.6
 Date: 2020.05.22
   Graphics:
@@ -9,9 +16,9 @@ Date: 2020.05.22
   Info:
     - Fixed restoring saved layout with items that don't exist in the current save
   Debug:
-    - Added command to toggle debug logging: /c remote.call('blugistics', 'debug', true)
+    - Added command to toggle debug logging: /c remote.call('bluegistics', 'debug', true)
   Scripting:
-    - Added command to set layouts manually: /c remote.call('blugistics', 'set_layouts', {})
+    - Added command to set layouts manually: /c remote.call('bluegistics', 'set_layouts', {})
     - Renamed "clear_globals" interface to "clear_layouts"
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.4
