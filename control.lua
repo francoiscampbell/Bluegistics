@@ -134,7 +134,7 @@ function repaint_frame(player)
     frame.clear()
     local layout_table = frame.add{
         type = "table",
-        column_count = 3,
+        column_count = 4,
     }
     for layout_name, layout in pairs(global.layouts) do
         layout_table.add{
@@ -150,6 +150,13 @@ function repaint_frame(player)
             style = "red_icon_button",
             tooltip = "Delete saved layout",
             name = "delete_saved_layout/" .. layout_name,
+        }
+        layout_table.add{
+            type = "sprite-button",
+            sprite = "utility/rename_icon_small",
+            style = "tool_button",
+            tooltip = "Delete saved layout",
+            name = "rename_saved_layout/" .. layout_name,
         }
         layout_table.add{
             type = "label",
