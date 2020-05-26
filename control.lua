@@ -160,21 +160,26 @@ function repaint_frame(player)
         type = "line",
         direction = "horizontal",
     }
-    frame.add{
-        type = "textfield",
-        name = "new_layout_name",
-        tooltip = "The name for this new saved layout"
+    local stretch_fields = {
+        frame.add{
+            type = "textfield",
+            name = "new_layout_name",
+            tooltip = "The name for this new saved layout"
+        },
+        frame.add{
+            type = "button",
+            name = "save_current_logistics_layout",
+            caption = "Save current logistics layout"
+        },
+        frame.add{
+            type = "button",
+            name = "clear_current_logistics_layout",
+            caption = "Clear current logistics layout"
+        },
     }
-    frame.add{
-        type = "button",
-        name = "save_current_logistics_layout",
-        caption = "Save current logistics layout"
-    }
-    frame.add{
-        type = "button",
-        name = "clear_current_logistics_layout",
-        caption = "Clear current logistics layout"
-    }
+    for _, field in pairs(stretch_fields) do
+        field.style.horizontally_stretchable = "on"
+    end
 end
 
 function redraw_gui(player)
