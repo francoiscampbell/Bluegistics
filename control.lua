@@ -66,6 +66,9 @@ function count_layouts()
     return num_layouts
 end
 
+local on_button_click_handlers = {}
+local on_gui_confirmed_handlers = {}
+
 function create_button(player)
     if not player.character then
         log("player has no character")
@@ -76,9 +79,10 @@ function create_button(player)
     local button = flow.toggle_saved_logistics_layouts
     if button then return end
 
+    local button
     logistic_robot = game.item_prototypes['logistic-robot']
     if logistic_robot then
-        flow.add{
+        button = flow.add{
             type = "sprite-button",
             name = "toggle_saved_logistics_layouts",
             sprite = "item/logistic-robot",
@@ -87,13 +91,16 @@ function create_button(player)
             number = count_layouts(),
         }
     else
-        flow.add{
+        button = flow.add{
             type = "button",
             name = "toggle_saved_logistics_layouts",
             caption = "Saved Logistics Layouts",
             style = mod_gui.button_style,
             tooltip = "Toggle saved logistics layouts frame",
         }
+    end
+    on_button_click_handlers[button.name] = function(event)
+        toggle_frame(game.players[event.player_index])
     end
 end
 
@@ -137,55 +144,75 @@ function repaint_frame(player)
         column_count = 4,
     }
     for layout_name, layout in pairs(global.layouts) do
-        layout_table.add{
+        local export = layout_table.add{
             type = "sprite-button",
             sprite = "utility/export_slot",
             style = "green_icon_button",
             tooltip = "Restore saved layout",
             name = "restore_saved_layout/" .. layout_name,
         }
-        layout_table.add{
+        on_button_click_handlers[export.name] = function(event)
+            restore_logistic_layout(game.players[event.player_index], layout_name)
+        end
+
+        local delete = layout_table.add{
             type = "sprite-button",
             sprite = "utility/trash",
             style = "red_icon_button",
             tooltip = "Delete saved layout",
             name = "delete_saved_layout/" .. layout_name,
         }
-        layout_table.add{
+        on_button_click_handlers[delete.name] = function(event)
+            delete_logistic_layout(game.players[event.player_index], layout_name)
+        end
+
+        local rename = layout_table.add{
             type = "sprite-button",
             sprite = "utility/rename_icon_small",
             style = "tool_button",
-            tooltip = "Delete saved layout",
+            tooltip = "Rename saved layout",
             name = "rename_saved_layout/" .. layout_name,
         }
+
         layout_table.add{
             type = "label",
             caption = layout_name,
         }
     end
+
     frame.add{
         type = "line",
         direction = "horizontal",
     }
-    local stretch_fields = {
-        frame.add{
-            type = "textfield",
-            name = "new_layout_name",
-            tooltip = "The name for this new saved layout"
-        },
-        frame.add{
-            type = "button",
-            name = "save_current_logistics_layout",
-            caption = "Save current logistics layout"
-        },
-        frame.add{
-            type = "button",
-            name = "clear_current_logistics_layout",
-            caption = "Clear current logistics layout"
-        },
+
+    local new_name_input = frame.add{
+        type = "textfield",
+        name = "new_layout_name",
+        tooltip = "The name for this new saved layout"
     }
-    for _, field in pairs(stretch_fields) do
-        field.style.horizontally_stretchable = "on"
+    new_name_input.style.horizontally_stretchable = "on"
+    on_gui_confirmed_handlers[new_name_input.name] = function(event)
+        save_logistic_layout(game.players[event.player_index], event.element.text)
+    end
+
+    local save = frame.add{
+        type = "button",
+        name = "save_current_logistics_layout",
+        caption = "Save current logistics layout"
+    }
+    save.style.horizontally_stretchable = "on"
+    on_button_click_handlers[save.name] = function(event)
+        save_logistic_layout(game.players[event.player_index], frame.new_layout_name.text)
+    end
+
+    local clear = frame.add{
+        type = "button",
+        name = "clear_current_logistics_layout",
+        caption = "Clear current logistics layout"
+    }
+    clear.style.horizontally_stretchable = "on"
+    on_button_click_handlers[clear.name] = function(event)
+        clear_logistic_layout(game.players[event.player_index])
     end
 end
 
@@ -195,44 +222,28 @@ function redraw_gui(player)
 end
 
 function on_button_click(event)
-    local player = game.players[event.player_index]
-
-    local name = event.element.name
-    local _, _, restore_layout_name = string.find(name, "restore_saved_layout/(%a+)")
-    local _, _, delete_layout_name = string.find(name, "delete_saved_layout/(%a+)")
-
-    if name == "toggle_saved_logistics_layouts" then
-        toggle_frame(player)
-    elseif name == "save_current_logistics_layout" then
-        local new_layout_name = mod_gui.get_frame_flow(player).saved_logistics_frame.new_layout_name.text
-        save_logistic_layout(player, new_layout_name)
-    elseif name == "clear_current_logistics_layout" then
-        clear_logistic_layout(player)
-    elseif restore_layout_name then
-        restore_logistic_layout(player, restore_layout_name)
-    elseif delete_layout_name then
-        delete_logistic_layout(player, delete_layout_name)
+    event_handler = on_button_click_handlers[event.element.name]
+    if event_handler then
+        event_handler(event)
     end
 end
 
 function on_gui_confirmed(event)
-    local player = game.players[event.player_index]
-    local name = event.element.name
-
-    if name == "new_layout_name" then
-        local new_layout_name = mod_gui.get_frame_flow(player).saved_logistics_frame.new_layout_name.text
-        save_logistic_layout(player, new_layout_name)
+    event_handler = on_gui_confirmed_handlers[event.element.name]
+    if event_handler then
+        event_handler(event)
     end
 end
 
 function setup()
     global.layouts = global.layouts or {}
     for _, player in pairs(game.players) do
-        create_button(player)
+        redraw_gui(player)
     end
 end
 
 script.on_init(setup)
+script.on_configuration_changed(setup)
 script.on_event(defines.events.on_gui_click, on_button_click)
 script.on_event(defines.events.on_gui_confirmed, on_gui_confirmed)
 
