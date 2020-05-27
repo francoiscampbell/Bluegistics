@@ -155,9 +155,9 @@ function on_button_click(event)
     local player = game.players[event.player_index]
 
     local name = event.element.name
-    local _, _, restore_layout_name = string.find(name, "restore_saved_layout/(%a+)")
-    local _, _, delete_layout_name = string.find(name, "delete_saved_layout/(%a+)")
-    local _, _, rename_layout_name = string.find(name, "rename_saved_layout/(%a+)")
+    local _, _, restore_layout_name = string.find(name, "restore_saved_layout/(.+)")
+    local _, _, delete_layout_name = string.find(name, "delete_saved_layout/(.+)")
+    local _, _, rename_layout_name = string.find(name, "rename_saved_layout/(.+)")
 
     if name == "toggle_saved_logistics_layouts" then
         toggle_frame(player)
@@ -172,7 +172,6 @@ function on_button_click(event)
         logistics.delete_logistic_layout(player, delete_layout_name)
     elseif rename_layout_name then
         local layout = global.layouts[rename_layout_name]
-        util.log(serpent.line(layout))
         if layout.renaming then
             util.log('event.element.name: ' .. event.element.name)
             util.log('event.element.parent.name: ' .. event.element.parent.name)
@@ -194,7 +193,7 @@ function on_gui_confirmed(event)
     local player = game.players[event.player_index]
 
     local name = event.element.name
-    local _, _, rename_layout_name = string.find(name, "layout_new_name/(%a+)")
+    local _, _, rename_layout_name = string.find(name, "layout_new_name/(.+)")
 
     if name == "new_layout_name" then
         local new_layout_name = mod_gui.get_frame_flow(player).saved_logistics_frame.new_layout_name.text
