@@ -2,9 +2,6 @@ require "mod-gui"
 local logistics = require "logistics"
 local util = require "util"
 
-local on_button_click_handlers = {}
-local on_gui_confirmed_handlers = {}
-
 function create_button(player)
     if not player.character then
         util.log("player has no character")
@@ -34,9 +31,6 @@ function create_button(player)
             style = mod_gui.button_style,
             tooltip = "Toggle saved logistics layouts frame",
         }
-    end
-    on_button_click_handlers[button.name] = function(event)
-        toggle_frame(game.players[event.player_index])
     end
 end
 
@@ -80,60 +74,44 @@ function repaint_frame(player)
         column_count = 4,
     }
     for layout_name, layout in util.sorted_pairs(global.layouts) do
-        local export = layout_table.add{
+        layout_table.add{
             type = "sprite-button",
             sprite = "utility/export_slot",
             style = "green_icon_button",
             tooltip = "Restore saved layout",
             name = "restore_saved_layout/" .. layout_name,
         }
-        on_button_click_handlers[export.name] = function(event)
-            logistics.restore_logistic_layout(game.players[event.player_index], layout_name)
-        end
 
-        local delete = layout_table.add{
+        layout_table.add{
             type = "sprite-button",
             sprite = "utility/trash",
             style = "red_icon_button",
             tooltip = "Delete saved layout",
             name = "delete_saved_layout/" .. layout_name,
         }
-        on_button_click_handlers[delete.name] = function(event)
-            logistics.delete_logistic_layout(game.players[event.player_index], layout_name)
-        end
 
         if layout.renaming then
-            local rename = layout_table.add{
+            layout_table.add{
                 type = "sprite-button",
                 sprite = "utility/check_mark",
                 style = "tool_button",
                 tooltip = "Rename saved layout",
                 name = "rename_saved_layout/" .. layout_name,
             }
-            local new_name_input = layout_table.add{
+            layout_table.add{
                 type = "textfield",
                 text = layout_name,
                 name = "layout_new_name/" .. layout_name,
                 tooltip = "The new name for this saved layout"
             }
-            new_name_input.style.horizontally_stretchable = "on"
-            on_button_click_handlers[rename.name] = function(event)
-                logistics.rename_logistic_layout(layout_name, layout_table[new_name_input.name].text)
-            end
-            on_gui_confirmed_handlers[new_name_input.name] = function(event)
-                logistics.rename_logistic_layout(layout_name, event.element.text)
-            end
         else
-            local rename = layout_table.add{
+            layout_table.add{
                 type = "sprite-button",
                 sprite = "utility/rename_icon_small",
                 style = "tool_button",
                 tooltip = "Rename saved layout",
                 name = "rename_saved_layout/" .. layout_name,
             }
-            on_button_click_handlers[rename.name] = function(event)
-                layout.renaming = true
-            end
             layout_table.add{
                 type = "label",
                 caption = layout_name,
@@ -152,9 +130,6 @@ function repaint_frame(player)
         tooltip = "The name for this new saved layout"
     }
     new_name_input.style.horizontally_stretchable = "on"
-    on_gui_confirmed_handlers[new_name_input.name] = function(event)
-        logistics.save_logistic_layout(game.players[event.player_index], event.element.text)
-    end
 
     local save = frame.add{
         type = "button",
@@ -162,9 +137,6 @@ function repaint_frame(player)
         caption = "Save current logistics layout"
     }
     save.style.horizontally_stretchable = "on"
-    on_button_click_handlers[save.name] = function(event)
-        logistics.save_logistic_layout(game.players[event.player_index], frame.new_layout_name.text)
-    end
 
     local clear = frame.add{
         type = "button",
@@ -172,9 +144,6 @@ function repaint_frame(player)
         caption = "Clear current logistics layout"
     }
     clear.style.horizontally_stretchable = "on"
-    on_button_click_handlers[clear.name] = function(event)
-        logistics.clear_logistic_layout(game.players[event.player_index])
-    end
 end
 
 function redraw_gui(player)
@@ -183,19 +152,60 @@ function redraw_gui(player)
 end
 
 function on_button_click(event)
-    event_handler = on_button_click_handlers[event.element.name]
-    if event_handler then
-        event_handler(event)
-        redraw_gui(game.players[event.player_index])
+    local player = game.players[event.player_index]
+
+    local name = event.element.name
+    local _, _, restore_layout_name = string.find(name, "restore_saved_layout/(%a+)")
+    local _, _, delete_layout_name = string.find(name, "delete_saved_layout/(%a+)")
+    local _, _, rename_layout_name = string.find(name, "rename_saved_layout/(%a+)")
+
+    if name == "toggle_saved_logistics_layouts" then
+        toggle_frame(player)
+    elseif name == "save_current_logistics_layout" then
+        local new_layout_name = mod_gui.get_frame_flow(player).saved_logistics_frame.new_layout_name.text
+        logistics.save_logistic_layout(player, new_layout_name)
+    elseif name == "clear_current_logistics_layout" then
+        logistics.clear_logistic_layout(player)
+    elseif restore_layout_name then
+        logistics.restore_logistic_layout(player, restore_layout_name)
+    elseif delete_layout_name then
+        logistics.delete_logistic_layout(player, delete_layout_name)
+    elseif rename_layout_name then
+        local layout = global.layouts[rename_layout_name]
+        util.log(serpent.line(layout))
+        if layout.renaming then
+            util.log('event.element.name: ' .. event.element.name)
+            util.log('event.element.parent.name: ' .. event.element.parent.name)
+            local layout_new_name_textbox = event.element.parent["layout_new_name/" .. rename_layout_name]
+            util.log('layout_new_name_textbox.name: ' .. layout_new_name_textbox.name)
+            util.log('layout_new_name_textbox.text: ' .. layout_new_name_textbox.text)
+            logistics.rename_logistic_layout(rename_layout_name, layout_new_name_textbox.text)
+        else
+            layout.renaming = true
+        end
+    else
+        return
     end
+
+    redraw_gui(player)
 end
 
 function on_gui_confirmed(event)
-    event_handler = on_gui_confirmed_handlers[event.element.name]
-    if event_handler then
-        event_handler(event)
-        redraw_gui(game.players[event.player_index])
+    local player = game.players[event.player_index]
+
+    local name = event.element.name
+    local _, _, rename_layout_name = string.find(name, "layout_new_name/(%a+)")
+
+    if name == "new_layout_name" then
+        local new_layout_name = mod_gui.get_frame_flow(player).saved_logistics_frame.new_layout_name.text
+        logistics.save_logistic_layout(player, new_layout_name)
+    elseif rename_layout_name then
+        logistics.rename_logistic_layout(rename_layout_name, event.element.text)
+    else
+        return
     end
+
+    redraw_gui(player)
 end
 
 function setup()
