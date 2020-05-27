@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.1.2
+Date: 2020.05.26
+  Bugfixes:
+    - Fix that operating on layouts with spaces in the name would either do nothing or crash
+---------------------------------------------------------------------------------------------------
 Version: 0.1.1
 Date: 2020.05.26
   Bugfixes:
