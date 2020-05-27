@@ -18,4 +18,10 @@ function util.sorted_pairs(t)
     return iter
 end
 
+function util.log(message)
+    if global.__debug__ then
+        game.print(message)
+    end
+end
+
 return util

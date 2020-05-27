@@ -1,83 +1,13 @@
 require "mod-gui"
+local logistics = require "logistics"
 local util = require "util"
-
-local function log(message)
-    if global.__debug__ then
-        game.print(message)
-    end
-end
-
-function save_logistic_layout(player, name)
-    if not name or name == "" then
-        player.print("New layout name cannot be nil or empty")
-        return
-    end
-
-    local slots = {}
-    for i = 1, player.character_logistic_slot_count do
-        local slot = player.get_personal_logistic_slot(i)
-        if slot and slot.name then
-            slots[i] = slot
-        end
-    end
-
-    log('Saving current layout as ' .. name)
-    global.layouts[name] = {
-        slots = slots,
-        slot_count = player.character_logistic_slot_count,
-    }
-end
-
-function clear_logistic_layout(player)
-    for i = 1, player.character_logistic_slot_count do
-        player.clear_personal_logistic_slot(i)
-    end
-    player.character_logistic_slot_count = 0
-end
-
-function restore_logistic_layout(player, name)
-    clear_logistic_layout(player)
-    local layout = global.layouts[name]
-    if not layout then
-        log("Invalid layout " .. name .. ", probably because of a stale GUI. Current global: " .. serpent.line(global))
-        redraw_gui(player)
-        return
-    end
-    player.character_logistic_slot_count = layout.slot_count
-    for index, slot in pairs(layout.slots) do
-        if not pcall(player.set_personal_logistic_slot, index, slot) then
-            log('Ignoring unknown item ' .. slot.name)
-        end
-    end
-end
-
-function delete_logistic_layout(player, name)
-    log('Deleting layout ' .. name)
-    global.layouts[name] = nil
-end
-
-function rename_logistic_layout(from, to)
-    global.layouts[from].renaming = false
-    if from ~= to then
-        global.layouts[to] = global.layouts[from]
-        global.layouts[from] = nil
-    end
-end
-
-function count_layouts()
-    local num_layouts = 0
-    for _, _ in pairs(global.layouts) do
-        num_layouts = num_layouts + 1
-    end
-    return num_layouts
-end
 
 local on_button_click_handlers = {}
 local on_gui_confirmed_handlers = {}
 
 function create_button(player)
     if not player.character then
-        log("player has no character")
+        util.log("player has no character")
         return
     end
 
@@ -94,7 +24,7 @@ function create_button(player)
             sprite = "item/logistic-robot",
             style = mod_gui.button_style,
             tooltip = "Toggle saved logistics layouts frame",
-            number = count_layouts(),
+            number = logistics.count_layouts(),
         }
     else
         button = flow.add{
@@ -158,7 +88,7 @@ function repaint_frame(player)
             name = "restore_saved_layout/" .. layout_name,
         }
         on_button_click_handlers[export.name] = function(event)
-            restore_logistic_layout(game.players[event.player_index], layout_name)
+            logistics.restore_logistic_layout(game.players[event.player_index], layout_name)
         end
 
         local delete = layout_table.add{
@@ -169,7 +99,7 @@ function repaint_frame(player)
             name = "delete_saved_layout/" .. layout_name,
         }
         on_button_click_handlers[delete.name] = function(event)
-            delete_logistic_layout(game.players[event.player_index], layout_name)
+            logistics.delete_logistic_layout(game.players[event.player_index], layout_name)
         end
 
         if layout.renaming then
@@ -188,10 +118,10 @@ function repaint_frame(player)
             }
             new_name_input.style.horizontally_stretchable = "on"
             on_button_click_handlers[rename.name] = function(event)
-                rename_logistic_layout(layout_name, layout_table[new_name_input.name].text)
+                logistics.rename_logistic_layout(layout_name, layout_table[new_name_input.name].text)
             end
             on_gui_confirmed_handlers[new_name_input.name] = function(event)
-                rename_logistic_layout(layout_name, event.element.text)
+                logistics.rename_logistic_layout(layout_name, event.element.text)
             end
         else
             local rename = layout_table.add{
@@ -223,7 +153,7 @@ function repaint_frame(player)
     }
     new_name_input.style.horizontally_stretchable = "on"
     on_gui_confirmed_handlers[new_name_input.name] = function(event)
-        save_logistic_layout(game.players[event.player_index], event.element.text)
+        logistics.save_logistic_layout(game.players[event.player_index], event.element.text)
     end
 
     local save = frame.add{
@@ -233,7 +163,7 @@ function repaint_frame(player)
     }
     save.style.horizontally_stretchable = "on"
     on_button_click_handlers[save.name] = function(event)
-        save_logistic_layout(game.players[event.player_index], frame.new_layout_name.text)
+        logistics.save_logistic_layout(game.players[event.player_index], frame.new_layout_name.text)
     end
 
     local clear = frame.add{
@@ -243,7 +173,7 @@ function repaint_frame(player)
     }
     clear.style.horizontally_stretchable = "on"
     on_button_click_handlers[clear.name] = function(event)
-        clear_logistic_layout(game.players[event.player_index])
+        logistics.clear_logistic_layout(game.players[event.player_index])
     end
 end
 
