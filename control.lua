@@ -77,7 +77,7 @@ function repaint_frame(player)
         layout_table.add{
             type = "sprite-button",
             sprite = "utility/export_slot",
-            style = "green_icon_button",
+            style = "tool_button_green",
             tooltip = "Restore saved layout",
             name = "restore_saved_layout/" .. layout_name,
         }
@@ -85,7 +85,7 @@ function repaint_frame(player)
         layout_table.add{
             type = "sprite-button",
             sprite = "utility/trash",
-            style = "red_icon_button",
+            style = "tool_button_red",
             tooltip = "Delete saved layout",
             name = "delete_saved_layout/" .. layout_name,
         }
@@ -107,7 +107,7 @@ function repaint_frame(player)
         else
             layout_table.add{
                 type = "sprite-button",
-                sprite = "utility/rename_icon_small",
+                sprite = "utility/rename_icon_normal",
                 style = "tool_button",
                 tooltip = "Rename saved layout",
                 name = "rename_saved_layout/" .. layout_name,
