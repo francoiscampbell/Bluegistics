@@ -2,7 +2,7 @@
 
 VERSION=$(jq -r '.version' < info.json)
 RELEASE_DIR="Bluegistics_${VERSION}"
-ZIP_FILES=(info.json changelog.txt control.lua thumbnail.png)
+ZIP_FILES=(info.json changelog.txt *.lua thumbnail.png)
 ZIP_FILE="Bluegistics_${VERSION}.zip"
 
 rm Bluegistics_*.zip
