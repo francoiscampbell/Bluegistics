@@ -214,8 +214,14 @@ function setup()
     end
 end
 
+function on_player_created(event)
+    local player = game.players[event.player_index]
+    redraw_gui(player)
+end
+
 script.on_init(setup)
 script.on_configuration_changed(setup)
+script.on_event(defines.events.on_player_created, on_player_created)
 script.on_event(defines.events.on_gui_click, on_button_click)
 script.on_event(defines.events.on_gui_confirmed, on_gui_confirmed)
 
