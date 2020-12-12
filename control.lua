@@ -1,6 +1,7 @@
 require "mod-gui"
 local logistics = require "logistics"
 local util = require "util"
+local mod_gui = require "mod-gui"
 
 function create_button(player)
     if not player.character then
