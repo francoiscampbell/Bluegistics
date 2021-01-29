@@ -32,8 +32,6 @@ function logistics.clear_logistic_layout(player)
     for i = 1, player.character.request_slot_count do
         player.clear_personal_logistic_slot(i)
     end
-    -- player.character.request_slot_count = 0
-	-- it's probably not necessary anymore
 end
 
 function logistics.restore_logistic_layout(player, name)
@@ -46,7 +44,6 @@ function logistics.restore_logistic_layout(player, name)
         redraw_gui(player)
         return
     end
-    -- player.character.request_slot_count = layout.slot_count
     for index, slot in pairs(layout.slots) do
         if not pcall(player.set_personal_logistic_slot, index, slot) then
             util.log('Ignoring unknown item ' .. slot.name)
