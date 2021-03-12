@@ -7,9 +7,11 @@ function logistics.save_logistic_layout(player, name)
         player.print("New layout name cannot be nil or empty")
         return
     end
+    
+    if not check_player_has_character(player) then return end
 
     local slots = {}
-    for i = 1, player.character_logistic_slot_count do
+    for i = 1, player.character.request_slot_count do
         local slot = player.get_personal_logistic_slot(i)
         if slot and slot.name then
             slots[i] = slot
@@ -19,18 +21,22 @@ function logistics.save_logistic_layout(player, name)
     util.log('Saving current layout as ' .. name)
     global.layouts[name] = {
         slots = slots,
-        slot_count = player.character_logistic_slot_count,
+        slot_count = player.character.request_slot_count,
     }
 end
 
 function logistics.clear_logistic_layout(player)
-    for i = 1, player.character_logistic_slot_count do
+    if not check_player_has_character(player) then return end
+    
+
+    for i = 1, player.character.request_slot_count do
         player.clear_personal_logistic_slot(i)
     end
-    player.character_logistic_slot_count = 0
 end
 
 function logistics.restore_logistic_layout(player, name)
+    if not check_player_has_character(player) then return end
+
     logistics.clear_logistic_layout(player)
     local layout = global.layouts[name]
     if not layout then
@@ -38,7 +44,6 @@ function logistics.restore_logistic_layout(player, name)
         redraw_gui(player)
         return
     end
-    player.character_logistic_slot_count = layout.slot_count
     for index, slot in pairs(layout.slots) do
         if not pcall(player.set_personal_logistic_slot, index, slot) then
             util.log('Ignoring unknown item ' .. slot.name)
@@ -65,6 +70,15 @@ function logistics.count_layouts()
         num_layouts = num_layouts + 1
     end
     return num_layouts
+end
+
+function check_player_has_character(player)
+    if not player.character then
+        player.print("You can only use this when you are controlling your character")
+        return false
+    end
+    
+    return true
 end
 
 return logistics
