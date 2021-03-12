@@ -7,8 +7,8 @@ function logistics.save_logistic_layout(player, name)
         player.print("New layout name cannot be nil or empty")
         return
     end
-	
-	if not check_player_has_character(player) then return end
+    
+    if not check_player_has_character(player) then return end
 
     local slots = {}
     for i = 1, player.character.request_slot_count do
@@ -26,8 +26,8 @@ function logistics.save_logistic_layout(player, name)
 end
 
 function logistics.clear_logistic_layout(player)
-	if not check_player_has_character(player) then return end
-	
+    if not check_player_has_character(player) then return end
+    
 
     for i = 1, player.character.request_slot_count do
         player.clear_personal_logistic_slot(i)
@@ -35,7 +35,7 @@ function logistics.clear_logistic_layout(player)
 end
 
 function logistics.restore_logistic_layout(player, name)
-	if not check_player_has_character(player) then return end
+    if not check_player_has_character(player) then return end
 
     logistics.clear_logistic_layout(player)
     local layout = global.layouts[name]
@@ -73,12 +73,12 @@ function logistics.count_layouts()
 end
 
 function check_player_has_character(player)
-	if not player.character then
-		util.log("You can only use this when you are controlling your character")
-		return false
-	end
-	
-	return true
+    if not player.character then
+        player.print("You can only use this when you are controlling your character")
+        return false
+    end
+    
+    return true
 end
 
 return logistics
